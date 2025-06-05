@@ -5,7 +5,8 @@ const reportRoutes = require("./routes/report");
 
 // Import routes AFTER app is initialized
 const authRoutes = require('./routes/auth');
-const protectedRoutes = require('./routes/protected'); // ✅ NEW protected route
+const protectedRoutes = require('./routes/protected');
+const userRoutes = require('./routes/users'); // ✅ NEW protected route
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -18,6 +19,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api', protectedRoutes); // ✅ /api/dashboard is now protected
 app.use("/api/reports", reportRoutes);
+app.use("/api/users", userRoutes);
 
 // Test route
 app.get('/', (req, res) => {
