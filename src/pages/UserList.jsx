@@ -147,7 +147,7 @@ const UserRow = ({ user }) => (
       </span>
     </td>
     <td className="px-6 py-4">
-      {new Date(user.createdAt).toLocaleDateString()}
+      {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}
     </td>
   </tr>
 );

@@ -24,7 +24,7 @@ const register = async (req, res) => {
         email,
         password: hashedPassword,
         role: 'user', // default role
-        avatar: '', // optional
+        avatar: '',   // default empty avatar
       },
     });
 
@@ -47,12 +47,13 @@ const login = async (req, res) => {
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
+
+    // update last login
     await prisma.user.update({
       where: { id: user.id },
       data: { lastLogin: new Date() },
     });
 
-    
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
@@ -66,7 +67,6 @@ const login = async (req, res) => {
   }
 };
 
-// Get Me Controller
 // Get Me Controller
 const getMe = async (req, res) => {
   try {
@@ -91,14 +91,12 @@ const getMe = async (req, res) => {
     let pendingCount = 0;
 
     if (user.role === 'admin') {
-      // Admin sees global report stats
       [reportCount, resolvedCount, pendingCount] = await Promise.all([
         prisma.report.count(),
         prisma.report.count({ where: { status: "Resolved" } }),
         prisma.report.count({ where: { status: "Pending" } }),
       ]);
     } else {
-      // Regular user sees only their own reports
       [reportCount, resolvedCount, pendingCount] = await Promise.all([
         prisma.report.count({ where: { userId } }),
         prisma.report.count({ where: { userId, status: "Resolved" } }),
@@ -120,6 +118,29 @@ const getMe = async (req, res) => {
   }
 };
 
+// ✅ New: Update Profile (Name / Avatar)
+const updateProfile = async (req, res) => {
+  try {
+    const userId = Number(req.user.id);
+
+    const updateData = {};
+    if (req.body.name) updateData.name = req.body.name;
+    if (req.file) updateData.avatar = `/uploads/avatars/${req.file.filename}`;
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+    });
+
+    res.json({
+      message: "Profile updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("updateProfile error:", error);
+    res.status(500).json({ error: "Failed to update profile" });
+  }
+};
 
 // Optional utility
 const fetchUserData = async (token) => {
@@ -134,4 +155,4 @@ const fetchUserData = async (token) => {
   }
 };
 
-module.exports = { register, login, getMe, fetchUserData };
+module.exports = { register, login, getMe, updateProfile, fetchUserData };
