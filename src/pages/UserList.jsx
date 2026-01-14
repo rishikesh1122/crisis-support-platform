@@ -73,18 +73,18 @@ const UserList = () => {
   };
 
   return (
-    <div>
+    <div className="text-slate-100">
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
         <div className="flex items-center gap-3">
-          <FaUsers className="text-3xl text-purple-600 dark:text-purple-400" />
-          <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100">User Management</h2>
+          <FaUsers className="text-3xl text-cyan-300" />
+          <h2 className="text-3xl font-bold text-white">User Management</h2>
         </div>
         <div className="flex items-center gap-2 w-full md:w-auto">
           <div className="relative flex-grow">
             <FaSearch className="absolute top-1/2 left-3 -translate-y-1/2 text-slate-400" />
-            <input type="text" placeholder="Search by name or email..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-purple-500 focus:outline-none transition" />
+            <input type="text" placeholder="Search by name or email..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder:text-slate-400 focus:ring-2 focus:ring-cyan-400 focus:outline-none transition" />
           </div>
-          <select value={filterRole} onChange={e => setFilterRole(e.target.value)} className="py-2 px-3 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-purple-500 focus:outline-none transition">
+          <select value={filterRole} onChange={e => setFilterRole(e.target.value)} className="py-2 px-3 rounded-lg bg-white/5 border border-white/10 text-white focus:ring-2 focus:ring-cyan-400 focus:outline-none transition">
             <option value="all">All Roles</option>
             <option value="admin">Admin</option>
             <option value="user">User</option>
@@ -92,9 +92,9 @@ const UserList = () => {
         </div>
       </div>
 
-      <div className="overflow-x-auto bg-white dark:bg-slate-800/50 rounded-lg shadow-md border dark:border-slate-700">
-        <table className="w-full text-sm text-left text-slate-500 dark:text-slate-400">
-          <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-300">
+      <div className="overflow-x-auto bg-white/5 border border-white/10 rounded-lg shadow-md backdrop-blur-xl">
+        <table className="w-full text-sm text-left text-slate-300">
+          <thead className="text-xs text-slate-200 uppercase bg-white/5">
             <tr>
               <th scope="col" className="px-6 py-3 min-w-[250px] cursor-pointer" onClick={() => requestSort('name')}>
                 <div className="flex items-center gap-2">User {getSortIcon('name')}</div>
@@ -111,11 +111,11 @@ const UserList = () => {
             {loading ? (
               [...Array(5)].map((_, i) => <SkeletonRow key={i} />)
             ) : error ? (
-              <tr><td colSpan="3" className="text-center py-10 text-red-500">{error}</td></tr>
+              <tr><td colSpan="3" className="text-center py-10 text-red-400">{error}</td></tr>
             ) : paginatedUsers.length > 0 ? (
               paginatedUsers.map(user => <UserRow key={user.id} user={user} />)
             ) : (
-              <tr><td colSpan="3" className="text-center py-10 text-slate-500">No users match your criteria.</td></tr>
+              <tr><td colSpan="3" className="text-center py-10 text-slate-300">No users match your criteria.</td></tr>
             )}
           </tbody>
         </table>
@@ -131,18 +131,18 @@ const UserList = () => {
 // --- Sub-components for better organization ---
 
 const UserRow = ({ user }) => (
-  <tr className="bg-white dark:bg-slate-800 border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600/50 transition">
+  <tr className="bg-white/0 border-b border-white/10 hover:bg-white/5 transition text-white">
     <td className="px-6 py-4">
       <div className="flex items-center gap-3">
-        <img className="w-10 h-10 rounded-full" src={user.avatar || `https://i.pravatar.cc/40?u=${user.id}`} alt={`${user.name}'s avatar`} />
+        <img className="w-10 h-10 rounded-full border border-white/10" src={user.avatar || `https://i.pravatar.cc/40?u=${user.id}`} alt={`${user.name}'s avatar`} />
         <div>
-          <div className="font-semibold text-slate-900 dark:text-white">{user.name}</div>
-          <div className="text-slate-500 dark:text-slate-400">{user.email}</div>
+          <div className="font-semibold text-white">{user.name}</div>
+          <div className="text-slate-300">{user.email}</div>
         </div>
       </div>
     </td>
     <td className="px-6 py-4">
-      <span className={`text-xs font-medium px-3 py-1 rounded-full ${roleConfig[user.role]?.classes || 'bg-gray-100 text-gray-700'}`}>
+      <span className={`text-xs font-medium px-3 py-1 rounded-full ${roleConfig[user.role]?.classes || 'bg-white/10 text-white'}`}>
         {user.role}
       </span>
     </td>
@@ -153,10 +153,10 @@ const UserRow = ({ user }) => (
 );
 
 const SkeletonRow = () => (
-  <tr className="bg-white dark:bg-slate-800 border-b dark:border-slate-700 animate-pulse">
-    <td className="px-6 py-4"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700"></div><div><div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded"></div><div className="h-3 w-32 bg-slate-200 dark:bg-slate-700 rounded mt-2"></div></div></div></td>
-    <td className="px-6 py-4"><div className="h-5 w-16 bg-slate-200 dark:bg-slate-700 rounded-full"></div></td>
-    <td className="px-6 py-4"><div className="h-4 w-20 bg-slate-200 dark:bg-slate-700 rounded"></div></td>
+  <tr className="bg-white/0 border-b border-white/10 animate-pulse">
+    <td className="px-6 py-4"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-white/10"></div><div><div className="h-4 w-24 bg-white/10 rounded"></div><div className="h-3 w-32 bg-white/10 rounded mt-2"></div></div></div></td>
+    <td className="px-6 py-4"><div className="h-5 w-16 bg-white/10 rounded-full"></div></td>
+    <td className="px-6 py-4"><div className="h-4 w-20 bg-white/10 rounded"></div></td>
   </tr>
 );
 

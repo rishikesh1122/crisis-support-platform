@@ -1,44 +1,18 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios"; // Using axios for consistency
+import axios from "axios";
 import Particles from "@tsparticles/react";
 import { loadBasic } from "@tsparticles/basic";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaSpinner, FaCheckCircle } from "react-icons/fa";
 
-// --- Configuration for Particles.js ---
 const PARTICLES_OPTIONS = {
   fullScreen: { enable: true, zIndex: -1 },
-  background: { color: { value: "#0f0f1c" } },
   particles: {
-    number: { value: 60, density: { enable: true, value_area: 800 } },
-    color: { value: "#14b8a6" },
-    shape: { type: "circle" },
-    opacity: { value: 0.5, random: true },
-    size: { value: { min: 1, max: 3 }, random: true },
-    links: {
-      enable: true,
-      distance: 150,
-      color: "#38bdf8",
-      opacity: 0.3,
-      width: 1,
-    },
-    move: {
-      enable: true,
-      speed: 0.8,
-      direction: "none",
-      out_mode: "out",
-    },
-  },
-  interactivity: {
-    events: {
-      onhover: { enable: true, mode: "repulse" },
-      onclick: { enable: true, mode: "push" },
-    },
-    modes: {
-      repulse: { distance: 100 },
-      push: { particles_nb: 4 },
-    },
+    number: { value: 35, density: { enable: true, area: 1000 } },
+    color: { value: ["#67e8f9", "#a855f7", "#f472b6"] },
+    links: { enable: true, opacity: 0.2, color: "#67e8f9" },
+    move: { enable: true, speed: 1 },
   },
 };
 
@@ -52,29 +26,18 @@ const LoginPage = () => {
 
   const particlesInit = async (engine) => await loadBasic(engine);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isLoading || isSuccess) return;
-
     setError("");
     setIsLoading(true);
-    
     try {
-      // Using axios for cleaner syntax and error handling
       const res = await axios.post("http://localhost:5000/api/auth/login", formData);
-      
       setIsSuccess(true);
       localStorage.setItem("token", res.data.token);
-      
-      // Navigate after a short delay to show success feedback
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 1500);
-
+      setTimeout(() => navigate("/dashboard"), 800);
     } catch (err) {
       setError(err.response?.data?.error || "Login failed. Please check your credentials.");
     } finally {
@@ -82,103 +45,127 @@ const LoginPage = () => {
     }
   };
 
-  // Variants for staggered animations
-  const formVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.15,
-      }
-    },
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { y: 0, opacity: 1, transition: { type: 'spring' } },
-  };
-
   return (
-    <div className="relative min-h-screen flex items-center justify-center p-4 overflow-hidden bg-[#0f0f1c]">
+    <div className="relative min-height-screen min-h-screen flex items-center justify-center px-4 py-10">
       <Particles id="tsparticles" init={particlesInit} options={PARTICLES_OPTIONS} />
+      <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-white/5 pointer-events-none" aria-hidden />
 
-      <motion.div
-        variants={formVariants}
-        initial="hidden"
-        animate="visible"
-        className="bg-gradient-to-br from-white/10 via-white/5 to-white/10 backdrop-blur-2xl border border-cyan-400/30 text-white p-8 sm:p-10 rounded-3xl w-full max-w-md shadow-[0_0_40px_rgba(13,255,245,0.2)]"
-      >
-        <motion.h2 variants={itemVariants} className="text-4xl font-extrabold text-center mb-2 bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-500 bg-clip-text text-transparent drop-shadow-lg">
-          Welcome Back
-        </motion.h2>
-        <motion.p variants={itemVariants} className="text-center text-gray-300 mb-8">Sign in to access your dashboard.</motion.p>
-        
-        <AnimatePresence>
-          {error && (
-            <motion.p
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="text-red-400 bg-red-950/80 border border-red-500/50 p-3 rounded-lg mb-4 text-center text-sm overflow-hidden"
-            >
-              {error}
-            </motion.p>
-          )}
-        </AnimatePresence>
+      <div className="grid max-w-5xl w-full mx-auto gap-10 lg:grid-cols-[1.1fr_0.9fr] items-center">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="hidden lg:block p-8 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl"
+        >
+          <p className="text-sm uppercase tracking-[0.25em] text-cyan-200">CrisisConnect</p>
+          <h1 className="mt-3 text-3xl font-semibold text-white">Welcome back.</h1>
+          <p className="mt-3 text-slate-200/80">
+            Rejoin your command center, pick up triage where you left off, and keep your teams aligned.
+          </p>
+          <div className="mt-8 grid grid-cols-2 gap-3 text-sm">
+            {["Live triage", "Audit-ready", "Secure files", "24/7 uptime"].map((item) => (
+              <div key={item} className="p-3 rounded-xl bg-black/30 border border-white/10 text-slate-200">
+                {item}
+              </div>
+            ))}
+          </div>
+        </motion.div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <motion.div variants={itemVariants} className="relative">
-            <FaEnvelope className="absolute top-1/2 left-4 -translate-y-1/2 text-cyan-400/70" />
-            <input name="email" type="email" placeholder="Email" required onChange={handleChange} className="w-full pl-12 pr-4 py-3 bg-white/10 border border-white/20 placeholder-gray-400 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-shadow duration-300" />
-          </motion.div>
-          <motion.div variants={itemVariants} className="relative">
-            <FaLock className="absolute top-1/2 left-4 -translate-y-1/2 text-cyan-400/70" />
-            <input name="password" type={showPassword ? "text" : "password"} placeholder="Password" required onChange={handleChange} className="w-full pl-12 pr-12 py-3 bg-white/10 border border-white/20 placeholder-gray-400 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-shadow duration-300" />
-            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute top-1/2 right-4 -translate-y-1/2 text-gray-400 hover:text-cyan-400 transition" aria-label="Toggle password visibility">
-              {showPassword ? <FaEyeSlash /> : <FaEye />}
-            </button>
-          </motion.div>
-          <motion.div variants={itemVariants}>
-            <motion.button
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="p-8 rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-cyan-200">Sign in</p>
+              <h2 className="text-2xl font-semibold">Access your workspace</h2>
+            </div>
+            <div className="px-3 py-2 rounded-xl bg-gradient-to-r from-cyan-500/30 to-purple-500/30 text-xs text-white border border-white/10">
+              Secure session
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 text-red-100 p-3 text-sm"
+              >
+                {error}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Field
+              icon={<FaEnvelope />}
+              name="email"
+              type="email"
+              placeholder="you@organization.com"
+              onChange={handleChange}
+              autoComplete="email"
+            />
+            <Field
+              icon={<FaLock />}
+              name="password"
+              type={showPassword ? "text" : "password"}
+              placeholder="Enter your password"
+              onChange={handleChange}
+              autoComplete="current-password"
+              trailing={
+                <button type="button" onClick={() => setShowPassword((s) => !s)} className="text-slate-300">
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              }
+            />
+
+            <button
               type="submit"
               disabled={isLoading || isSuccess}
-              className={`w-full py-3 rounded-lg text-white font-semibold text-lg transition-all duration-300 shadow-lg disabled:opacity-70 disabled:cursor-not-allowed
-                ${isSuccess ? 'bg-gradient-to-r from-emerald-500 to-green-500' : 'bg-gradient-to-r from-cyan-500 via-sky-500 to-indigo-500 hover:shadow-cyan-500/50'}
-              `}
-              whileHover={{ scale: (isLoading || isSuccess) ? 1 : 1.05 }}
-              whileTap={{ scale: (isLoading || isSuccess) ? 1 : 0.98 }}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-500 font-semibold text-white shadow-xl shadow-purple-500/25 disabled:opacity-70"
             >
               <AnimatePresence mode="wait">
                 <motion.span
-                  key={isLoading ? 'loading' : isSuccess ? 'success' : 'ready'}
-                  initial={{ y: 10, opacity: 0 }}
+                  key={isLoading ? "loading" : isSuccess ? "success" : "ready"}
+                  initial={{ y: 8, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: -10, opacity: 0 }}
+                  exit={{ y: -8, opacity: 0 }}
                   transition={{ duration: 0.2 }}
                   className="flex items-center justify-center gap-2"
                 >
-                  {isLoading && <><FaSpinner className="animate-spin" /> Signing In...</>}
-                  {isSuccess && <><FaCheckCircle /> Success!</>}
-                  {!isLoading && !isSuccess && "Sign In"}
+                  {isLoading && <><FaSpinner className="animate-spin" /> Signing in</>}
+                  {isSuccess && <><FaCheckCircle /> Success</>}
+                  {!isLoading && !isSuccess && "Continue"}
                 </motion.span>
               </AnimatePresence>
-            </motion.button>
-          </motion.div>
-        </form>
+            </button>
+          </form>
 
-        <motion.p variants={itemVariants} className="text-sm text-center mt-8 text-gray-400">
-          Don’t have an account?{" "}
-          <motion.span
-            className="text-cyan-400 hover:underline cursor-pointer font-semibold"
-            onClick={() => navigate("/register")}
-            whileHover={{ textShadow: "0px 0px 4px rgb(34 211 238)" }}
-          >
-            Register here
-          </motion.span>
-        </motion.p>
-      </motion.div>
+          <p className="mt-6 text-sm text-slate-300 text-center">
+            New to CrisisConnect?
+            <button onClick={() => navigate("/register")} className="ml-2 text-cyan-200 hover:text-white">Create an account</button>
+          </p>
+        </motion.div>
+      </div>
     </div>
   );
 };
+
+const Field = ({ icon, trailing, ...props }) => (
+  <div className="relative">
+    <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-cyan-200/80">{icon}</div>
+    <input
+      {...props}
+      className="w-full pr-12 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-slate-400 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-500/40 outline-none"
+      style={{ paddingLeft: "3.25rem" }}
+      required
+    />
+    {trailing && <div className="absolute right-3 top-1/2 -translate-y-1/2">{trailing}</div>}
+  </div>
+);
 
 export default LoginPage;

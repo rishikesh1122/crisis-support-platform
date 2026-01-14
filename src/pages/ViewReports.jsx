@@ -96,23 +96,24 @@ const ViewReports = ({ user }) => {
   if (error) return <ErrorDisplay message={error} />;
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto text-slate-100">
       {/* Header & Controls */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
         <div className="flex items-center gap-3">
-          <FaClipboardList className="text-3xl text-purple-600 dark:text-purple-400" />
-          <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">
+          <FaClipboardList className="text-3xl text-cyan-300" />
+          <h1 className="text-3xl font-bold text-white">
             View Reports
           </h1>
         </div>
         <div className="relative w-full md:w-64">
-          <FaSearch className="absolute top-1/2 left-3 -translate-y-1/2 text-slate-400" />
+          <FaSearch className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-cyan-300" />
           <input
             type="text"
             placeholder="Search reports..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-purple-500 focus:outline-none transition"
+            className="w-full pr-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder:text-slate-400 focus:ring-2 focus:ring-cyan-400 focus:outline-none transition"
+            style={{ paddingLeft: "3rem" }}
           />
         </div>
       </div>
@@ -125,8 +126,8 @@ const ViewReports = ({ user }) => {
             onClick={() => setActiveFilter(filter)}
             className={`px-4 py-2 text-sm font-semibold rounded-full transition-all duration-200
               ${activeFilter === filter
-                ? 'bg-purple-600 text-white shadow-md'
-                : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600'
+                ? 'bg-gradient-to-r from-cyan-500 to-purple-500 text-white shadow-md'
+                : 'bg-white/5 border border-white/10 text-slate-200 hover:border-white/20'
               }`}
           >
             {filter}
@@ -173,9 +174,9 @@ const ReportCard = ({ report, user, onUpdateStatus, onDelete }) => {
   const config = statusConfig[status] || {};
 
   return (
-    <div className="bg-white dark:bg-slate-800/80 shadow-lg hover:shadow-xl rounded-xl p-5 transition-all duration-300 flex flex-col border border-transparent dark:hover:border-purple-600">
+    <div className="bg-white/5 border border-white/10 backdrop-blur-xl shadow-xl hover:-translate-y-1 transition-all duration-300 rounded-xl p-5 flex flex-col">
       <div className="flex justify-between items-start gap-2">
-        <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 break-words">{title}</h2>
+        <h2 className="text-lg font-bold text-white break-words">{title}</h2>
         <span className={`text-xs px-3 py-1 rounded-full font-medium flex-shrink-0 ${config.classes}`}>{status}</span>
       </div>
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400 mt-2">
@@ -183,7 +184,7 @@ const ReportCard = ({ report, user, onUpdateStatus, onDelete }) => {
         <span className="flex items-center gap-1.5"><FaExclamationCircle />{urgency || 'N/A'}</span>
       </div>
 
-      <p className="mt-3 text-slate-600 dark:text-slate-300 text-sm flex-grow">{description}</p>
+      <p className="mt-3 text-slate-200 text-sm flex-grow">{description}</p>
       
       {attachment && (
         <a href={attachment} target="_blank" rel="noopener noreferrer" className="mt-3 text-sm font-medium text-purple-600 dark:text-purple-400 hover:underline flex items-center gap-2">
@@ -191,7 +192,7 @@ const ReportCard = ({ report, user, onUpdateStatus, onDelete }) => {
         </a>
       )}
 
-      <div className="border-t border-slate-200 dark:border-slate-700 mt-4 pt-3 text-xs text-slate-500 dark:text-slate-400 space-y-2">
+      <div className="border-t border-white/10 mt-4 pt-3 text-xs text-slate-300 space-y-2">
         <div className="flex justify-between">
           <span className="flex items-center gap-1.5"><FaCalendarAlt /> Submitted:</span>
           <span>{new Date(createdAt).toLocaleString()}</span>
@@ -205,11 +206,11 @@ const ReportCard = ({ report, user, onUpdateStatus, onDelete }) => {
       </div>
       
       {user.role === 'admin' && (
-        <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700 flex items-center gap-3">
-          <select value={status} onChange={(e) => onUpdateStatus(report.id, e.target.value)} className="w-full text-sm bg-slate-100 dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-md p-2 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+        <div className="mt-4 pt-3 border-t border-white/10 flex items-center gap-3">
+          <select value={status} onChange={(e) => onUpdateStatus(report.id, e.target.value)} className="w-full text-sm bg-white/5 border border-white/10 rounded-md p-2 focus:ring-2 focus:ring-cyan-400 focus:outline-none">
             {Object.keys(statusConfig).map(s => <option key={s} value={s}>{s}</option>)}
           </select>
-          <button onClick={onDelete} className="p-2 text-slate-500 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/50 rounded-md transition-colors" aria-label="Delete report">
+          <button onClick={onDelete} className="p-2 text-slate-200 hover:bg-red-500/20 hover:text-red-200 rounded-md transition-colors" aria-label="Delete report">
             <FaTrash />
           </button>
         </div>
@@ -236,10 +237,10 @@ const SkeletonCard = () => (
 );
 
 const EmptyState = () => (
-  <div className="text-center py-20 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-    <FaClipboardList className="mx-auto text-5xl text-slate-400 dark:text-slate-500" />
-    <h3 className="mt-4 text-xl font-semibold text-slate-800 dark:text-slate-100">No Reports Found</h3>
-    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Try adjusting your search or filter.</p>
+  <div className="text-center py-20 bg-white/5 border border-white/10 rounded-xl backdrop-blur-xl text-white">
+    <FaClipboardList className="mx-auto text-5xl text-slate-300" />
+    <h3 className="mt-4 text-xl font-semibold">No Reports Found</h3>
+    <p className="mt-1 text-sm text-slate-300">Try adjusting your search or filter.</p>
   </div>
 );
 

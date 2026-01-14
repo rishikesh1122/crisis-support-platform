@@ -1,1 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
+
+:root {
+	color-scheme: light;
+	--bg: #070b19;
+	--card: rgba(255, 255, 255, 0.08);
+	--card-border: rgba(255, 255, 255, 0.12);
+	--text-primary: #e8edf7;
+	--text-muted: #9ca3af;
+	--glow: radial-gradient(circle at 20% 20%, rgba(82, 255, 255, 0.12), transparent 35%),
+					 radial-gradient(circle at 80% 0%, rgba(151, 71, 255, 0.12), transparent 30%),
+					 radial-gradient(circle at 50% 80%, rgba(255, 107, 90, 0.12), transparent 35%);
+	--glass: rgba(255, 255, 255, 0.08);
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	font-family: "Plus Jakarta Sans", "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+	background: var(--bg);
+	background-image: var(--glow);
+	color: var(--text-primary);
+	min-height: 100vh;
+	line-height: 1.5;
+	-webkit-font-smoothing: antialiased;
+}
+
+/* App-wide dark mode (Facebook-like) applied to all routes except landing/login/register via RouteThemer */
+.app-dark {
+	--bg: #0f1115;
+	--card: #1c1e21;
+	--card-border: #2c2f33;
+	--text-primary: #e4e6eb;
+	--text-muted: #9aa0aa;
+	background-color: var(--bg);
+	color: var(--text-primary);
+}
+
+.app-dark .card-surface {
+	background: var(--card);
+	border: 1px solid var(--card-border);
+}
+
+.card-panel {
+	background: var(--card);
+	border: 1px solid var(--card-border);
+	backdrop-filter: blur(16px);
+	-webkit-backdrop-filter: blur(16px);
+	color: var(--text-primary);
+}
+
+.app-light {
+	--bg: #f4f6fb;
+	--card: #ffffff;
+	--card-border: #e5e7eb;
+	--text-primary: #0f172a;
+	--text-muted: #6b7280;
+	background-color: var(--bg);
+	color: var(--text-primary);
+}
+
+.app-light .card-surface {
+	background: var(--card);
+	border: 1px solid var(--card-border);
+}
+
+.card-panel h1,
+.card-panel h2,
+.card-panel h3,
+.card-panel h4,
+.card-panel p,
+.card-panel label,
+.card-panel span {
+	color: var(--text-primary);
+}
+
+.muted,
+.card-panel .muted,
+.card-panel .text-muted {
+	color: var(--text-muted) !important;
+}
+
+input,
+select,
+textarea {
+	background: var(--card);
+	border: 1px solid var(--card-border);
+	color: var(--text-primary);
+	border-radius: 0.75rem;
+	padding: 0.75rem 1rem;
+}
+
+input::placeholder,
+textarea::placeholder {
+	color: var(--text-muted);
+}
+
+.app-light .text-slate-300,
+.app-light .text-slate-200 {
+	color: #4b5563 !important;
+}
+
+.app-light .text-white {
+	color: #0f172a !important;
+}
+
+#root {
+	min-height: 100vh;
+}
+
+a {
+	color: inherit;
+	text-decoration: none;
+}
+
+::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+::-webkit-scrollbar-track {
+	background: rgba(255, 255, 255, 0.04);
+}
+::-webkit-scrollbar-thumb {
+	background: linear-gradient(180deg, #6ee7ff, #a855f7);
+	border-radius: 9999px;
+}

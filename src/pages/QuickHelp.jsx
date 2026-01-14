@@ -43,24 +43,25 @@ const QuickHelp = () => {
   }, [searchTerm]);
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto text-slate-900 dark:text-slate-100">
       <div className="text-center mb-8">
-        <FaQuestionCircle className="mx-auto text-5xl text-purple-600 dark:text-purple-400 mb-3" />
-        <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Frequently Asked Questions</h2>
-        <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+        <FaQuestionCircle className="mx-auto text-5xl text-cyan-500 dark:text-cyan-300 mb-3" />
+        <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Frequently Asked Questions</h2>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
           Find quick answers to common questions below.
         </p>
       </div>
       
       {/* Search Bar */}
       <div className="relative mb-8">
-        <FaSearch className="absolute top-1/2 left-4 -translate-y-1/2 text-slate-400" />
+        <FaSearch className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-cyan-500 dark:text-cyan-300" />
         <input
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search questions and answers..."
-          className="w-full pl-12 pr-4 py-3 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-purple-500 focus:outline-none transition"
+          className="w-full pr-4 py-3 rounded-lg border text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-cyan-400 focus:outline-none transition bg-white/80 dark:bg-white/5 border-slate-200 dark:border-white/10"
+          style={{ paddingLeft: "3.5rem" }}
         />
       </div>
 
@@ -76,21 +77,20 @@ const QuickHelp = () => {
             />
           ))
         ) : (
-          <div className="text-center py-10 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
-            <h3 className="font-semibold text-slate-700 dark:text-slate-200">No results found</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Try a different search term.</p>
+          <div className="text-center py-10 bg-white/5 border border-white/10 rounded-lg backdrop-blur-xl">
+            <h3 className="font-semibold text-white">No results found</h3>
+            <p className="text-sm text-slate-300 mt-1">Try a different search term.</p>
           </div>
         )}
       </div>
       
       {/* "Contact Us" Call-to-action */}
-      <div className="mt-12 text-center p-6 bg-gradient-to-r from-purple-50 to-indigo-100 dark:from-slate-800 dark:to-slate-900 rounded-lg">
-          <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Can't find the answer you're looking for?</h3>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Our support team is here to help you.</p>
-          {/* This button could navigate to the contact section */}
-          <button className="mt-4 px-6 py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 transition">
-              Contact Support
-          </button>
+        <div className="mt-12 text-center p-6 bg-white/5 border border-white/10 rounded-lg backdrop-blur-xl">
+            <h3 className="text-lg font-bold text-white">Can't find the answer you're looking for?</h3>
+            <p className="mt-1 text-sm text-slate-300">Our support team is here to help you.</p>
+            <button className="mt-4 px-6 py-2 bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-semibold rounded-lg shadow-md hover:opacity-90 transition">
+                Contact Support
+            </button>
       </div>
     </div>
   );
@@ -101,7 +101,7 @@ const FAQItem = ({ faq, isOpen, onToggle }) => (
   <div className="bg-white dark:bg-slate-800/50 rounded-lg shadow-sm border dark:border-slate-700 overflow-hidden">
     <button
       onClick={onToggle}
-      className="w-full flex justify-between items-center text-left p-5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50"
+      className="w-full flex justify-between items-center text-left p-5 cursor-pointer hover:bg-white/5"
     >
       <span className="font-semibold text-slate-800 dark:text-slate-100">{faq.q}</span>
       <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.3 }}>

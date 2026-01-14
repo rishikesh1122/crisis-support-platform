@@ -78,32 +78,32 @@ const FileReport = ({ onReportFiled }) => {
   };
   
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto text-slate-100">
       <div className="flex items-center gap-3 mb-6">
-        <FaPlusCircle className="text-3xl text-purple-600 dark:text-purple-400" />
-        <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100">File a New Report</h2>
+        <FaPlusCircle className="text-3xl text-cyan-300" />
+        <h2 className="text-3xl font-bold text-white">File a New Report</h2>
       </div>
 
       <Alert type={message.type} text={message.text} />
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6 bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl shadow-xl">
         <div>
-          <label htmlFor="title" className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">Report Title</label>
-          <input id="title" name="title" value={formState.title} onChange={handleChange} placeholder="e.g., System Bug in Profile Section" required className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 p-3 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none transition" />
+          <label htmlFor="title" className="block mb-2 text-sm font-medium text-slate-200">Report Title</label>
+          <input id="title" name="title" value={formState.title} onChange={handleChange} placeholder="e.g., System Bug in Profile Section" required className="w-full bg-black/40 border border-white/10 p-3 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:outline-none text-white placeholder:text-slate-400" />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label htmlFor="category" className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">Category</label>
-            <select id="category" name="category" value={formState.category} onChange={handleChange} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 p-3 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none transition">
+            <label htmlFor="category" className="block mb-2 text-sm font-medium text-slate-200">Category</label>
+            <select id="category" name="category" value={formState.category} onChange={handleChange} className="w-full bg-black/40 border border-white/10 p-3 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:outline-none">
               {REPORT_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
             </select>
           </div>
           <div>
-            <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">Urgency Level</label>
-            <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1 border border-slate-300 dark:border-slate-700">
+            <label className="block mb-2 text-sm font-medium text-slate-200">Urgency Level</label>
+            <div className="flex bg-black/30 rounded-lg p-1 border border-white/10">
               {URGENCY_LEVELS.map(level => (
-                <button type="button" key={level} onClick={() => setFormState(prev => ({...prev, urgency: level}))} className={`w-full py-2 text-sm font-semibold rounded-md transition-all duration-200 ${formState.urgency === level ? "bg-purple-600 text-white shadow" : "text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"}`}>
+                <button type="button" key={level} onClick={() => setFormState(prev => ({...prev, urgency: level}))} className={`w-full py-2 text-sm font-semibold rounded-md transition-all duration-200 ${formState.urgency === level ? "bg-gradient-to-r from-cyan-500 to-purple-500 text-white shadow" : "text-slate-200 hover:bg-white/5"}`}>
                   {level}
                 </button>
               ))}
@@ -112,16 +112,14 @@ const FileReport = ({ onReportFiled }) => {
         </div>
 
         <div>
-          <label htmlFor="description" className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">Detailed Description</label>
-          <textarea id="description" name="description" value={formState.description} onChange={handleChange} placeholder="Please provide as much detail as possible..." required rows={6} maxLength={MAX_DESC_LENGTH} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 p-3 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none transition" />
-          <p className="text-xs text-right mt-1 text-slate-500 dark:text-slate-400">{formState.description.length} / {MAX_DESC_LENGTH}</p>
+          <label htmlFor="description" className="block mb-2 text-sm font-medium text-slate-200">Detailed Description</label>
+          <textarea id="description" name="description" value={formState.description} onChange={handleChange} placeholder="Please provide as much detail as possible..." required rows={6} maxLength={MAX_DESC_LENGTH} className="w-full bg-black/40 border border-white/10 p-3 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:outline-none text-white placeholder:text-slate-400" />
+          <p className="text-xs text-right mt-1 text-slate-300">{formState.description.length} / {MAX_DESC_LENGTH}</p>
         </div>
 
-        {/* The file attachment UI has been removed from here */}
-
-        <div className="flex items-center justify-end gap-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-          <button type="button" onClick={resetForm} disabled={loading} className="py-2 px-5 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600 transition disabled:opacity-50">Clear</button>
-          <button type="submit" disabled={loading} className="flex items-center justify-center gap-2 w-40 py-2.5 rounded-lg text-white font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 transition shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed">
+        <div className="flex items-center justify-end gap-4 pt-4 border-t border-white/10">
+          <button type="button" onClick={resetForm} disabled={loading} className="py-2 px-5 text-sm font-medium text-slate-200 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition disabled:opacity-50">Clear</button>
+          <button type="submit" disabled={loading} className="flex items-center justify-center gap-2 w-40 py-2.5 rounded-lg text-white font-semibold bg-gradient-to-r from-cyan-500 to-purple-500 hover:opacity-95 transition shadow-lg disabled:opacity-60 disabled:cursor-not-allowed">
             {loading ? (<><FaSpinner className="animate-spin" /> Submitting...</>) : "Submit Report"}
           </button>
         </div>
@@ -135,8 +133,8 @@ const Alert = ({ type, text }) => {
   if (!text) return null;
 
   const styles = {
-    success: "bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-200",
-    error: "bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200",
+    success: "bg-emerald-500/15 border border-emerald-300/30 text-emerald-100",
+    error: "bg-red-500/15 border border-red-300/30 text-red-100",
   };
   const icons = {
     success: <FaCheckCircle className="text-xl" />,
