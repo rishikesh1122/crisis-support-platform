@@ -3,7 +3,7 @@ const multer = require("multer");
 const path = require("path");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-const { authenticateToken } = require("../middleware/authMiddleware");
+const { authenticateToken, requireAdmin } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
@@ -84,5 +84,48 @@ router.post(
     }
   }
 );
+
+// ✅ Delete a user (Admin only, cannot delete admin accounts)
+router.delete("/:id", authenticateToken, requireAdmin, async (req, res) => {
+  const userId = Number(req.params.id);
+
+  console.log("⚡ delete user request", { userId, requester: req.user });
+
+  if (Number.isNaN(userId)) {
+    return res.status(400).json({ error: "Invalid user id" });
+  }
+
+  try {
+    const targetUser = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+
+    if (!targetUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (targetUser.role === "admin") {
+      return res.status(403).json({ error: "Admin accounts cannot be deleted" });
+    }
+
+    // Delete related reports first, then the user
+    await prisma.report.deleteMany({ where: { userId } });
+    await prisma.user.delete({ where: { id: userId } });
+
+    res.json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+
+    if (error?.code === "P2025") {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res
+      .status(500)
+      .json({
+        error: "Failed to delete user",
+        detail: error?.message || "Unknown error",
+        meta: error?.meta || null,
+        code: error?.code || null,
+      });
+  }
+});
 
 module.exports = router;

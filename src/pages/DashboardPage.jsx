@@ -42,6 +42,7 @@ const DashboardPage = () => {
   const [dark, setDark] = useDarkMode();
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const sidebarRef = useRef(null);
 
@@ -161,7 +162,7 @@ const DashboardPage = () => {
           <div className="flex items-center justify-around">
             <button onClick={() => setDark(!dark)}>{dark ? <FaSun /> : <FaMoon />}</button>
             <button onClick={() => setShowNotif(!showNotif)}><FaBell /></button>
-            <button onClick={() => { localStorage.removeItem("token"); window.location.href = "/login"; }}><FaSignOutAlt /></button>
+            <button onClick={() => setShowLogoutConfirm(true)}><FaSignOutAlt /></button>
           </div>
           {showNotif && <NotificationsPanel notifications={notifications} onClear={() => setNotifications([])} />}
         </div>
@@ -189,6 +190,26 @@ const DashboardPage = () => {
       </main>
 
       {showEditModal && <EditProfileModal user={user} onClose={() => setShowEditModal(false)} onSave={refreshUserData} />}
+      {showLogoutConfirm && (
+        <div className="confirm-overlay">
+          <div className="confirm-card">
+            <h3 className="confirm-title">Log out?</h3>
+            <p className="confirm-text">You will need to sign in again to access your dashboard.</p>
+            <div className="confirm-actions">
+              <button className="confirm-btn cancel" onClick={() => setShowLogoutConfirm(false)}>Stay logged in</button>
+              <button
+                className="confirm-btn delete"
+                onClick={() => {
+                  localStorage.removeItem("token");
+                  window.location.href = "/login";
+                }}
+              >
+                Log out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
