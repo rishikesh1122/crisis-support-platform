@@ -37,6 +37,9 @@ const DashboardPage = () => {
   const [activeSection, setActiveSection] = useState("profile");
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [reportsLoading, setReportsLoading] = useState(false);
+  const [recentReports, setRecentReports] = useState([]);
+  const lastSeenReportAtRef = useRef(null);
   const [notifications, setNotifications] = useState([]);
   const [showNotif, setShowNotif] = useState(false);
   const [dark, setDark] = useDarkMode();
@@ -69,6 +72,64 @@ const DashboardPage = () => {
     setLoading(true);
     refreshUserData().finally(() => setLoading(false));
   }, [refreshUserData]);
+
+  const fetchRecentReports = useCallback(async (notifyNew = false) => {
+    try {
+      setReportsLoading(true);
+      const token = localStorage.getItem("token");
+      const res = await axios.get("/api/reports", { headers: { Authorization: `Bearer ${token}` } });
+      const sorted = (res.data || []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setRecentReports(sorted.slice(0, 5));
+
+      if (user?.role === "admin") {
+        const latest = sorted[0]?.createdAt ? new Date(sorted[0].createdAt).getTime() : null;
+        const lastSeen = lastSeenReportAtRef.current;
+
+        if (latest && lastSeen && notifyNew) {
+          const newOnes = sorted.filter(r => new Date(r.createdAt).getTime() > lastSeen);
+          if (newOnes.length) {
+            setNotifications(prev => [
+              ...newOnes.map(r => `New report: ${r.title}${r.user?.name ? ` by ${r.user.name}` : ""}`),
+              ...prev,
+            ].slice(0, 10));
+            setShowNotif(true);
+          }
+        }
+
+        if (latest) {
+          lastSeenReportAtRef.current = latest;
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch recent reports:", err);
+    } finally {
+      setReportsLoading(false);
+    }
+  }, [user?.role]);
+
+  useEffect(() => {
+    if (localStorage.getItem("token")) {
+      fetchRecentReports();
+    }
+  }, [fetchRecentReports]);
+
+  // Set baseline once user role is known (important for admin notifications)
+  useEffect(() => {
+    if (!user || user.role !== "admin") return;
+    fetchRecentReports();
+  }, [user, fetchRecentReports]);
+
+  useEffect(() => {
+    if (!user || user.role !== "admin") return;
+    const id = setInterval(() => {
+      fetchRecentReports(true);
+    }, 7000); // poll for new reports every 7s
+    return () => clearInterval(id);
+  }, [user, fetchRecentReports]);
+
+  const handleDataRefresh = useCallback(async () => {
+    await Promise.all([refreshUserData(), fetchRecentReports()]);
+  }, [refreshUserData, fetchRecentReports]);
 
   const handleAvatarUpload = async (e) => {
     const file = e.target.files[0];
@@ -108,9 +169,23 @@ const DashboardPage = () => {
     if (!user) return <ErrorScreen />;
 
     switch (activeSection) {
-      case "profile": return <><ProfileHeader user={user} setShowEditModal={setShowEditModal} /><StatsOverview user={user} statusPie={statusPie} /><QuickActions user={user} setActiveSection={setActiveSection} /></>;
-      case "report": return <FileReport onReportFiled={refreshUserData} />;
-      case "reports": return <ViewReports user={user} onReportUpdate={refreshUserData} />;
+      case "profile":
+        return (
+          <>
+            <ProfileHeader user={user} setShowEditModal={setShowEditModal} />
+            <StatsOverview user={user} statusPie={statusPie} />
+            <ActivityHighlights user={user} reports={recentReports} />
+            <QuickActions user={user} setActiveSection={setActiveSection} />
+            <RecentReportsSection
+              reports={recentReports}
+              loading={reportsLoading}
+              isAdmin={user.role === "admin"}
+              onViewAll={() => setActiveSection("reports")}
+            />
+          </>
+        );
+      case "report": return <FileReport onReportFiled={handleDataRefresh} />;
+      case "reports": return <ViewReports user={user} onReportUpdate={handleDataRefresh} />;
       case "contact": return <ContactSupport />;
       case "users": return <UserList />;
       case "trends": return <ReportTrends />;
@@ -148,7 +223,10 @@ const DashboardPage = () => {
             </label>
             <div className="flex flex-col overflow-hidden">
               <h2 className="text-base font-semibold truncate">{user?.name}</h2>
-              <span className={`text-xs ${sidebarMuted}`}>{user?.email}</span>
+              <div className="flex items-center gap-2">
+                <span className={`text-xs ${sidebarMuted}`}>{user?.email}</span>
+                {user?.role && <RoleBadge role={user.role} compact />}
+              </div>
               <button onClick={() => setShowEditModal(true)} className="mt-1 text-xs text-cyan-500 hover:underline flex items-center gap-1"><FaEdit /> Edit Profile</button>
             </div>
           </div>
@@ -161,15 +239,13 @@ const DashboardPage = () => {
         <div className="flex flex-col gap-2 border-t border-slate-200 dark:border-slate-700 pt-4">
           <div className="flex items-center justify-around">
             <button onClick={() => setDark(!dark)}>{dark ? <FaSun /> : <FaMoon />}</button>
-            <button onClick={() => setShowNotif(!showNotif)}><FaBell /></button>
             <button onClick={() => setShowLogoutConfirm(true)}><FaSignOutAlt /></button>
           </div>
-          {showNotif && <NotificationsPanel notifications={notifications} onClear={() => setNotifications([])} />}
         </div>
       </motion.aside>
 
       <main className={mainClasses}>
-        <div className="mb-4 flex items-center">
+        <div className="mb-4 flex items-center justify-between gap-4 relative z-30">
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             aria-expanded={menuOpen}
@@ -177,6 +253,17 @@ const DashboardPage = () => {
           >
             <FaBars />
           </button>
+          <div className="flex items-center gap-3 relative">
+            <button
+              onClick={() => setShowNotif(!showNotif)}
+              className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm flex items-center gap-2 hover:bg-white/10"
+            >
+              <FaBell />
+              <span>Notifications</span>
+              {notifications.length > 0 && <span className="text-xs bg-rose-500 text-white rounded-full px-2 py-0.5">{notifications.length}</span>}
+            </button>
+            {showNotif && <NotificationsPanel notifications={notifications} onClear={() => setNotifications([])} />}
+          </div>
         </div>
         <motion.div
           key={activeSection}
@@ -239,18 +326,35 @@ const ProfileHeader = ({ user, setShowEditModal }) => (
 );
 
 const StatsOverview = ({ user, statusPie }) => (
-  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
-    <div className="lg:col-span-1 card-panel p-6 rounded-xl text-center">
-      <AvatarImg user={user} size={96} className="mx-auto mb-2" />
-      <h2 className="font-bold text-white">{user.name}</h2>
-      <p className="text-xs text-slate-300">{user.email}</p>
+  <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mt-4">
+    <div className="card-panel p-5 rounded-xl flex items-center gap-4">
+      <AvatarImg user={user} size={88} className="flex-shrink-0" />
+      <div>
+        <h2 className="font-bold text-white text-lg">{user.name}</h2>
+        <div className="flex items-center gap-2 flex-wrap text-sm text-slate-300">
+          <span>{user.email}</span>
+          <RoleBadge role={user.role} />
+        </div>
+        <p className="text-xs text-slate-400 mt-1">Member since {user.joined}</p>
+      </div>
     </div>
-    <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div className="xl:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
       <StatCard label="Reports Filed" value={user.reportCount} />
       <StatCard label="Resolved" value={user.resolvedCount} />
       <StatCard label="Pending" value={user.pendingCount} />
       <div className="sm:col-span-3 card-panel p-4 rounded-xl">
-        <ResponsiveContainer height={200}><PieChart><Pie data={statusPie} cx="50%" cy="50%" innerRadius={30} outerRadius={60} dataKey="value">{statusPie.map((e, i) => <Cell key={i} fill={PIE_CHART_COLORS[i]} />)}</Pie><Tooltip /></PieChart></ResponsiveContainer>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold">Status Mix</h3>
+          <span className="text-xs text-slate-400">Last updated now</span>
+        </div>
+        <ResponsiveContainer height={180}>
+          <PieChart>
+            <Pie data={statusPie} cx="50%" cy="50%" innerRadius={32} outerRadius={62} dataKey="value" paddingAngle={3}>
+              {statusPie.map((e, i) => <Cell key={i} fill={PIE_CHART_COLORS[i]} />)}
+            </Pie>
+            <Tooltip />
+          </PieChart>
+        </ResponsiveContainer>
       </div>
     </div>
   </div>
@@ -261,16 +365,77 @@ const StatCard = ({ label, value }) => <div className="card-panel p-4 rounded-xl
 const QuickActions = ({ user, setActiveSection }) => (
   <div className="mt-6">
     <h2 className="font-bold mb-3">Quick Actions</h2>
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
       <button onClick={() => setActiveSection("report")} className="bg-gradient-to-r from-cyan-500 to-purple-500 text-white p-3 rounded-lg hover:scale-105 shadow-lg">File Report</button>
       <button onClick={() => setActiveSection("reports")} className="bg-white/5 border border-white/10 p-3 rounded-lg hover:scale-105">View Reports</button>
+      <button onClick={() => setActiveSection("faq")} className="bg-white/5 border border-white/10 p-3 rounded-lg hover:scale-105">Quick Help</button>
       {user.role === "admin" && <button onClick={() => setActiveSection("users")} className="bg-white/5 border border-white/10 p-3 rounded-lg hover:scale-105">All Users</button>}
     </div>
   </div>
 );
 
+const ActivityHighlights = ({ user, reports }) => {
+  const statusCounts = reports.reduce((acc, r) => {
+    acc[r.status] = (acc[r.status] || 0) + 1;
+    return acc;
+  }, {});
+
+  const items = [
+    { label: "Open this week", value: reports.filter(r => daysAgo(r.createdAt) <= 7).length },
+    { label: "Pending", value: statusCounts["Pending"] || 0 },
+    { label: "In Progress", value: statusCounts["In Progress"] || 0 },
+    { label: "Resolved", value: statusCounts["Resolved"] || 0 },
+  ];
+
+  return (
+    <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
+      {items.map((item) => (
+        <div key={item.label} className="card-panel p-3 rounded-xl text-center">
+          <p className="text-2xl font-bold text-white">{item.value}</p>
+          <p className="text-xs text-slate-400">{item.label}</p>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const RecentReportsSection = ({ reports, loading, isAdmin, onViewAll }) => (
+  <div className="mt-6 card-panel p-5 rounded-2xl">
+    <div className="flex items-center justify-between mb-3">
+      <div>
+        <p className="text-xs uppercase tracking-[0.2em] text-cyan-400">Recent reports</p>
+        <h3 className="text-lg font-semibold">Latest activity</h3>
+      </div>
+      <button onClick={onViewAll} className="text-sm text-cyan-400 hover:underline">View all</button>
+    </div>
+    {loading ? (
+      <div className="text-slate-300 text-sm">Loading...</div>
+    ) : reports.length === 0 ? (
+      <div className="text-slate-300 text-sm">No reports yet. File your first report to get started.</div>
+    ) : (
+      <div className="space-y-2">
+        {reports.map((report) => (
+          <div key={report.id} className="flex items-start justify-between bg-white/5 border border-white/10 rounded-lg px-3 py-2">
+            <div className="flex flex-col">
+              <p className="font-semibold text-white text-sm">{report.title}</p>
+              <p className="text-xs text-slate-400 line-clamp-1">{report.description}</p>
+              <p className="text-xs text-slate-500 mt-1">{new Date(report.createdAt).toLocaleString()}</p>
+            </div>
+            <div className="text-right">
+              <span className="px-2 py-1 text-xs rounded-full bg-white/10 text-white">{report.status}</span>
+              {isAdmin && report.user && (
+                <p className="text-[11px] text-slate-400 mt-1">{report.user.name}</p>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+);
+
 const NotificationsPanel = ({ notifications, onClear }) => (
-  <div className="absolute bottom-20 right-4 w-64 bg-white/10 border border-white/10 p-3 rounded-xl shadow-lg backdrop-blur-xl">
+  <div className="absolute top-full right-0 mt-2 w-64 bg-white/10 border border-white/10 p-3 rounded-xl shadow-lg backdrop-blur-xl z-50">
     <div className="font-bold text-white mb-2">Notifications</div>
     <ul>{notifications.length ? notifications.map((n, i) => <li key={i}>{n}</li>) : <li className="text-sm text-gray-500">No notifications</li>}</ul>
     {notifications.length > 0 && <button onClick={onClear} className="text-xs mt-2 underline">Clear All</button>}
@@ -295,6 +460,26 @@ const AvatarImg = ({ user, size = 120, className = "" }) => {
       style={{ width: size, height: size }}
       className={`rounded-full border-2 border-cyan-400/70 object-cover ${className}`}
     />
+  );
+};
+
+const daysAgo = (date) => {
+  const then = new Date(date).getTime();
+  const now = Date.now();
+  return Math.floor((now - then) / (1000 * 60 * 60 * 24));
+};
+
+const RoleBadge = ({ role, compact = false }) => {
+  if (!role) return null;
+  const isAdmin = role === "admin";
+  const colors = isAdmin
+    ? "bg-gradient-to-r from-rose-500 to-amber-500 text-white"
+    : "bg-white/10 text-slate-200 border border-white/10";
+  const padding = compact ? "px-2 py-0.5 text-[10px]" : "px-3 py-1 text-xs";
+  return (
+    <span className={`rounded-full font-semibold uppercase tracking-wide ${colors} ${padding}`}>
+      {isAdmin ? "Admin" : "User"}
+    </span>
   );
 };
 

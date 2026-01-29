@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { createPortal } from "react-dom";
 import axios from "axios";
 import { FaClipboardList, FaSearch, FaTrash, FaUser, FaCalendarAlt, FaTag, FaExclamationCircle, FaFileDownload } from "react-icons/fa";
 
@@ -79,13 +80,13 @@ const ViewReports = ({ user }) => {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (report) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`/api/reports/${id}`, {
+      await axios.delete(`/api/reports/${report.id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setReports((prev) => prev.filter((r) => r.id !== id));
+      setReports((prev) => prev.filter((r) => r.id !== report.id));
     } catch (err) {
       alert("Failed to delete report.");
     } finally {
@@ -148,7 +149,7 @@ const ViewReports = ({ user }) => {
               report={report} 
               user={user} 
               onUpdateStatus={updateStatus}
-              onDelete={() => setReportToDelete(report.id)} 
+              onDelete={() => setReportToDelete(report)} 
             />
           ))}
         </div>
@@ -159,6 +160,7 @@ const ViewReports = ({ user }) => {
       {/* Confirmation Modal */}
       {reportToDelete && (
         <ConfirmationModal
+          report={reportToDelete}
           onConfirm={() => handleDelete(reportToDelete)}
           onCancel={() => setReportToDelete(null)}
         />
@@ -252,23 +254,24 @@ const ErrorDisplay = ({ message }) => (
   </div>
 );
 
-const ConfirmationModal = ({ onConfirm, onCancel }) => (
-  <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-2xl p-6 max-w-sm w-full">
-      <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Are you sure?</h3>
-      <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-        This action cannot be undone. The report will be permanently deleted.
-      </p>
-      <div className="mt-6 flex justify-end gap-3">
-        <button onClick={onCancel} className="px-4 py-2 text-sm font-medium bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-md hover:bg-slate-300 dark:hover:bg-slate-600 transition">
-          Cancel
-        </button>
-        <button onClick={onConfirm} className="px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-md hover:bg-red-700 transition">
-          Delete
-        </button>
+const ConfirmationModal = ({ report, onConfirm, onCancel }) => {
+  const modal = (
+    <div className="confirm-overlay fixed inset-0 z-50 flex items-center justify-center px-4" aria-modal="true" role="dialog">
+      <div className="confirm-card bg-white/10 border border-white/10 backdrop-blur-2xl shadow-2xl rounded-xl p-6 max-w-sm w-full text-white">
+        <h3 className="confirm-title text-lg font-bold">Delete report?</h3>
+        <p className="confirm-text text-sm text-slate-200 mt-2">This action cannot be undone. The report will be permanently deleted.</p>
+        {report?.title && (
+          <p className="mt-3 text-sm text-slate-100 font-semibold line-clamp-2">“{report.title}”</p>
+        )}
+        <div className="confirm-actions flex justify-end gap-3 mt-6">
+          <button onClick={onCancel} className="confirm-btn cancel px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-slate-100 hover:bg-white/20">Cancel</button>
+          <button onClick={onConfirm} className="confirm-btn delete px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700">Delete</button>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+
+  return createPortal(modal, document.body);
+};
 
 export default ViewReports;
